@@ -2,9 +2,44 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>BPM Project</title>
+  <title>BPM Lookup</title>
 </head>
 <body>
+  <h2>🎵 Get BPM from GetSongBPM API</h2>
   <p>This project uses data from <a href="https://getsongbpm.com" target="_blank">GetSongBPM</a>.</p>
+
+  <label>Track Title: <input type="text" id="track" placeholder="Stay"></label><br>
+  <label>Artist (optional): <input type="text" id="artist" placeholder="Rihanna"></label><br>
+  <button onclick="getBPM()">Get BPM</button>
+
+  <pre id="output">BPM will show up here...</pre>
+
+  <script>
+    async function getBPM() {
+      const apiKey = "734d12beb80af155e565566c168e16dc";
+      const track = document.getElementById("track").value.trim();
+      const artist = document.getElementById("artist").value.trim().toLowerCase();
+      const output = document.getElementById("output");
+
+      const url = `https://api.getsongbpm.com/search/?api_key=${apiKey}&type=song&lookup=${encodeURIComponent(track)}`;
+      output.textContent = "Fetching...";
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        const results = data.search || [];
+        const match = results.find(song => 
+          artist && song.artist?.name?.toLowerCase().includes(artist)
+        );
+
+        const tempo = match?.tempo || (results[0]?.tempo ?? "Not found");
+        output.textContent = `🎧 Tempo: ${tempo} BPM`;
+      } catch (err) {
+        output.textContent = "❌ Error: " + err.message;
+      }
+    }
+  </script>
 </body>
 </html>
